@@ -1,8 +1,5 @@
 <?php
 
-//namespace App;
-
-//require __DIR__ . '/vendor/autoload.php';
 require '../vendor/autoload.php';
 
 
@@ -10,51 +7,13 @@ $inputFileType = 'Xlsx';
 $inputFileName = './files/5000_1.xlsx';
 
 /**  Define a Read Filter class implementing \PhpOffice\PhpSpreadsheet\Reader\IReadFilter  */
-class ChunkReadFilter implements \PhpOffice\PhpSpreadsheet\Reader\IReadFilter
-{
-    private $startRow = 0;
-    private $endRow   = 0;
-    public $headers = [];
-
-    public $chunkSize = 5000;
-
-    /**  Set the list of rows that we want to read  */
-    public function setRows($startRow)
-    {
-        $this->startRow = $startRow;
-        $this->endRow   = $startRow + $this->chunkSize;
-    }
-
-    public function readCell($columnAddress, $row, $worksheetName = '')
-    {
-        //  Only read the heading row, and the configured rows
-        if (($row == 1) || ($row >= $this->startRow && $row < $this->endRow)) {
-            return true;
-        }
-        return false;
-    }
-
-    public function setHeaders($headers)
-    {
-        $this->headers = $headers;
-    }
-
-    public function mergeWithHeader($v)
-    {
-        return array_combine($this->headers, $v);
-    }
-}
-
 
 echo "start => " . date("H:i:s") . "<br>";
 
-/**  Create a new Reader of the type defined in $inputFileType  **/
 $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($inputFileType);
 
-/**  Define how many rows we want to read for each "chunk"  **/
 
-/**  Create a new Instance of our Read Filter  **/
-$chunkFilter = new ChunkReadFilter();
+$chunkFilter = new App\ChunkReadFilter();
 
 $headers = array(
     'id',
@@ -81,7 +40,11 @@ $reader->setReadDataOnly(true);
 $reader->setReadEmptyCells(false);
 
 
-$dbh = new PDO('mysql:host=localhost;dbname=CHUNK_EXCEL', 'root', '');
+
+
+$dbh = new App\Database();
+$dbh = $dbh->getConnection();
+
 
 
 /**  Loop to read our worksheet in "chunk size" blocks  **/
